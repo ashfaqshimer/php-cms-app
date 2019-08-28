@@ -1,29 +1,16 @@
 <?php
 
-// require 'includes/database.php';
-require 'classes/Database.php';
-require 'includes/auth.php';
-require 'classes/Article.php';
+require 'includes/init.php';
 
-session_start();
+$conn = require 'includes/db.php';
 
-$db   = new Database();
-$conn = $db->getConn();
+$paginator = new Paginator($_GET['page'] ?? 1, 4, Article::getTotal($conn));
 
-$articles = Article::getAll($conn);
+$articles = Article::getPage($conn, $paginator->limit, $paginator->offset);
 
 ?>
 
 <?php require 'includes/header.php';?>
-
-<?php if (isLoggedIn()): ?>
-    <p>You are logged in. <a href="logout.php">Logout</a></p>
-    <a href="new-article.php">New Article</a>
-<?php else: ?>
-    <p>You are not logged in. <a href="login.php">Login</a></p>
-<?php endif;?>
-
-
 
     <?php if (empty($articles)): ?>
         <p>No articles found.</p>
@@ -38,6 +25,9 @@ $articles = Article::getAll($conn);
         </li>
         <?php endforeach;?>
     </ul>
+
+    <?php require 'includes/pagination.php';?>
+
     <?php endif;?>
 
 

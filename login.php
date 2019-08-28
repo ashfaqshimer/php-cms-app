@@ -1,16 +1,15 @@
 <?php
-require 'includes/url.php';
+require 'includes/init.php';
 
-session_start();
+$conn = require 'includes/db.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $username = $_POST['username'];
     $password = $_POST['password'];
 
-    if ($username === 'admin' && $password === 'secret') {
-        session_regenerate_id(true);
-        $_SESSION['is_logged_in'] = true;
-        redirect('/');
+    if (User::authenticate($conn, $username, $password)) {
+        Auth::login();
+        Url::redirect('/');
     }
     $errors[] = ('Invalid credentials');
 }
