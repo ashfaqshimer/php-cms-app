@@ -19,7 +19,11 @@ if (isset($_GET['id']) && is_numeric($_GET['id'])) {
     <?php if ($article): ?>
     <article>
             <h2><?=htmlspecialchars($article[0]['title'])?></h2>
-
+            <?php if ($article[0]['published_at']): ?>
+                        <time><?=$article[0]['published_at']?></time>
+                    <?php else: ?>
+                        Unpublished
+                    <?php endif;?>
             <?php if ($article[0]['category_name']): ?>
                 <p>Categories :</p>
                     <?php foreach ($article as $a): ?>
@@ -35,7 +39,7 @@ if (isset($_GET['id']) && is_numeric($_GET['id'])) {
 
         <a href="edit-article.php?id=<?=$article[0]['id'];?>">Edit</a>
         <a href="edit-article-image.php?id=<?=$article[0]['id'];?>">Edit Image</a>
-        <a href="delete-article.php?id=<?=$article[0]['id'];?>">Delete</a>
+        <a class='deleteBtn' href="delete-article.php?id=<?=$article[0]['id'];?>">Delete</a>
 
     <?php else: ?>
         <p>No article found.</p>

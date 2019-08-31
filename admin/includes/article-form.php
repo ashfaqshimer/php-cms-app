@@ -6,27 +6,28 @@
     </ul>
 <?php endif;?>
 
-<form method='post'>
-    <div class="">
+<form id="formArticle" method='post'>
+    <div class="form-group">
         <label for="title">Title</label>
-        <input type="text" name='title' id='title' placeholder='Article Title' value=<?=htmlspecialchars($article->title);?>>
+        <input class='form-control' type="text" name='title' id='title' placeholder='Article Title' value=<?=htmlspecialchars($article->title);?>>
     </div>
 
-    <div class="">
+    <div class="form-group">
         <label for="conent">Content</label>
-        <textarea name="content" id="content" cols="30" rows="10" placeholder='Article content' ><?=htmlspecialchars($article->content);?></textarea>
+        <textarea class='form-control' name="content" id="content" cols="30" rows="10" placeholder='Article content' ><?=htmlspecialchars($article->content);?></textarea>
     </div>
 
-    <div class="">
+    <div class="form-group">
         <label for="published_at">Publication date and time</label>
-        <input type="datetime-local" name='published_at' id='published_at' value=<?=htmlspecialchars($article->published_at);?>>
+        <input class='form-control' name='published_at' id='published_at' value=<?=htmlspecialchars($article->published_at);?>>
     </div>
 
     <fieldset>
         <legend>Categories</legend>
         <?php foreach ($categories as $category): ?>
-            <div>
+            <div class='form-check'>
                 <input
+                    class='form-check-input'
                     type="checkbox"
                     name="category[]"
                     value="<?=$category['id']?>"
@@ -35,10 +36,10 @@
                     checked
                     <?php endif;?>
                 >
-                <label for="category<?=$category['id']?>"><?=htmlspecialchars($category['name'])?></label>
+                <label class='form-check-label' for="category<?=$category['id']?>"><?=htmlspecialchars($category['name'])?></label>
             </div>
         <?php endforeach;?>
     </fieldset>
 
-    <button type='submit'>Save</button>
+    <button class='btn btn-primary' type='submit'>Save</button>
 </form>

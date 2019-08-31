@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <?php require 'includes/header.php';?>
 
 <form method='post'>
-    <h2>Login</h2>
+    <h2 class='display-4'>Login</h2>
         <?php if (!empty($errors)): ?>
     <ul>
         <?php foreach ($errors as $error): ?>
@@ -26,15 +26,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <?php endforeach;?>
     </ul>
     <?php endif;?>
-    <div>
+    <div class='form-group'>
         <label for="username">Username</label>
-        <input id='username' name='username' type="text">
+        <input class='form-control' id='username' name='username' type="text">
     </div>
-    <div>
+    <div class='form-group'>
         <label for="password">Password</label>
-        <input id='password' name='password' type="password">
+        <input class='form-control' id='password' name='password' type="password">
     </div>
-    <button type='submit'>Login</button>
+    <button class='btn btn-primary' type='submit'>Log in</button>
 </form>
 
 <?php require 'includes/footer.php';?>

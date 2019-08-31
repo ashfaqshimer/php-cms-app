@@ -57,14 +57,21 @@ class Article
      * @return array An associative array of all the article records
      *
      */
-    public static function getPage($conn, $limit, $offset)
+    public static function getPage($conn, $limit, $offset, $only_published = false)
     {
+        $condition = $only_published ? ' WHERE published_at IS NOT NULL' : '';
 
-        $sql = "SELECT *
-            FROM article
-            ORDER BY published_at
-            LIMIT :limit
-            OFFSET :offset";
+        $sql = "SELECT a.*, category.name AS category_name
+                FROM (SELECT *
+                FROM article
+                $condition
+                ORDER BY published_at
+                LIMIT :limit
+                OFFSET :offset) AS a
+                LEFT JOIN article_category
+                ON a.id = article_category.article_id
+                LEFT JOIN category
+                ON article_category.category_id = category.id";
 
         $stmt = $conn->prepare($sql);
 
@@ -73,7 +80,28 @@ class Article
 
         $stmt->execute();
 
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $articles = [];
+
+        $previous_id = null;
+
+        foreach ($results as $row) {
+            $article_id = $row['id'];
+
+            if ($article_id != $previous_id) {
+                $articles[$article_id] = $row['id'];
+                if ($article_id != $previous_id) {
+                    $row['category_names'] = [];
+                    $articles[$article_id] = $row;
+                }
+            }
+
+            $articles[$article_id]['category_names'][] = $row['category_name'];
+            $previous_id                               = $article_id;
+        }
+
+        return $articles;
     }
 
     /**
@@ -169,18 +197,18 @@ class Article
             $this->errors[] = 'Content is required';
         }
 
-        // if ($this->published_at !== '') {
-        //     $date_time = date_create_from_format('m/d/Y h:i A', $this->published_at);
+        if ($this->published_at !== '') {
+            $date_time = date_create_from_format('Y-m-d H:i:s', $this->published_at);
 
-        //     if ($date_time === false) {
-        //         $this->errors[] = 'Invalid date and time';
-        //     } else {
-        //         $date_errors = date_get_last_errors();
-        //         if ($date_errors['warning_count'] > 0) {
-        //             $this->errors[] = 'Invalid date and time';
-        //         }
-        //     }
-        // }
+            if ($date_time === false) {
+                $this->errors[] = 'Invalid date and time';
+            } else {
+                $date_errors = date_get_last_errors();
+                if ($date_errors['warning_count'] > 0) {
+                    $this->errors[] = 'Invalid date and time';
+                }
+            }
+        }
         return empty($this->errors);
     }
 
@@ -215,9 +243,10 @@ class Article
         return $stmt->execute();
     }
 
-    public static function getTotal($conn)
+    public static function getTotal($conn, $only_published = false)
     {
-        return $conn->query('SELECT COUNT(*) FROM article')->fetchColumn();
+        $condition = $only_published ? ' WHERE published_at IS NOT NULL' : '';
+        return $conn->query("SELECT COUNT(*) FROM article$condition")->fetchColumn();
     }
 
     public function getCategories($conn)
@@ -235,7 +264,7 @@ class Article
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public static function getWithCategories($conn, $id)
+    public static function getWithCategories($conn, $id, $only_published = false)
     {
         $sql = "SELECT article.*, category.name AS category_name
                 FROM article
@@ -244,6 +273,10 @@ class Article
                 LEFT JOIN category
                 ON article_category.category_id = category.id
                 WHERE article.id = :id";
+
+        if ($only_published) {
+            $sql .= ' AND article.published_at IS NOT NULL';
+        }
 
         $stmt = $conn->prepare($sql);
         $stmt->bindValue(':id', $id, PDO::PARAM_INT);
@@ -291,5 +324,22 @@ class Article
         }
 
         $stmt->execute();
+    }
+
+    public function publish($conn)
+    {
+        $sql = "UPDATE article SET published_at = :published_at
+                WHERE id = :id";
+
+        $stmt = $conn->prepare($sql);
+
+        $stmt->bindValue(':id', $this->id, PDO::PARAM_INT);
+
+        $published_at = date("Y-m-d H:i:s");
+        $stmt->bindValue(':published_at', $published_at, PDO::PARAM_STR);
+
+        if ($stmt->execute()) {
+            return $published_at;
+        }
     }
 }

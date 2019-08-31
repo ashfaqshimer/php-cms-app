@@ -7,6 +7,20 @@
  */
 class Database
 {
+    protected $db_host;
+    protected $db_name;
+    protected $db_user;
+    protected $db_pass;
+
+    public function __construct($host, $name, $user, $pass)
+    {
+        $this->db_host = $host;
+        $this->db_name = $name;
+        $this->db_user = $user;
+        $this->db_pass = $pass;
+
+    }
+
     /**
      * Get the database connection
      *
@@ -14,15 +28,11 @@ class Database
      **/
     public function getConn()
     {
-        $db_host = "localhost";
-        $db_name = 'cms';
-        $db_user = 'admin';
-        $db_pass = 'DTYdYj1xAUGisu3U';
 
-        $dsn = 'mysql:host=' . $db_host . ';dbname=' . $db_name . ';charset=utf8';
+        $dsn = 'mysql:host=' . $this->db_host . ';dbname=' . $this->db_name . ';charset=utf8';
 
         try {
-            $db = new PDO($dsn, $db_user, $db_pass);
+            $db = new PDO($dsn, $this->db_user, $this->db_pass);
             $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             return $db;
         } catch (PDOException $e) {
